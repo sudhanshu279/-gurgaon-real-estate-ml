@@ -1,3 +1,12 @@
+from pathlib import Path
+import pickle
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+with open(BASE_DIR / "datasets" / "df.pkl", "rb") as file:
+    df = pickle.load(file)
+    
+import joblib
 import streamlit as st # type: ignore
 import pickle
 import pandas as pd
@@ -10,8 +19,8 @@ st.set_page_config(page_title="Viz Demo")
 with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/2)df.pkl','rb') as file:
     df = pickle.load(file)
 
-with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/1)pipeline.pkl','rb') as file:
-    pipeline = pickle.load(file)
+with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/1)pipeline.joblib','rb') as file:
+    pipeline = joblib.load(file)
 
 
 st.header('Enter your inputs')
