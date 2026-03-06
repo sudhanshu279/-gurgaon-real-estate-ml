@@ -1,70 +1,142 @@
 from pathlib import Path
 import pickle
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-with open(BASE_DIR / "datasets" / "df.pkl", "rb") as file:
-    df = pickle.load(file)
-    
 import joblib
-import streamlit as st # type: ignore
-import pickle
+import streamlit as st
 import pandas as pd
 import numpy as np
 
-st.set_page_config(page_title="Viz Demo")
+# Page config
+st.set_page_config(page_title="Gurgaon Price Predictor", layout="wide")
 
+# Project base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/2)df.pkl','rb') as file:
+# Load dataframe
+with open(BASE_DIR / "datasets" / "df.pkl", "rb") as file:
     df = pickle.load(file)
 
-with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/1)pipeline.joblib','rb') as file:
-    pipeline = joblib.load(file)
+# Load pipeline
+pipeline = joblib.load(BASE_DIR / "datasets" / "pipeline.joblib")
 
+# Title
+st.title("🏠 Gurgaon Real Estate Price Predictor")
 
-st.header('Enter your inputs')
+st.markdown("""
+This app predicts **property prices in Gurgaon** using a Machine Learning model.  
+Enter property details in the **sidebar** to estimate the property price.
+""")
 
-# property_type
-property_type = st.selectbox('Property Type',['flat','house'])
+# Sidebar inputs
+st.sidebar.header("Enter Property Details")
 
-# sector
-sector = st.selectbox('Sector',sorted(df['sector'].unique().tolist()))
+property_type = st.sidebar.selectbox(
+    "Property Type",
+    ["flat", "house"]
+)
 
-bedrooms = float(st.selectbox('Number of Bedroom',sorted(df['bedRoom'].unique().tolist())))
+sector = st.sidebar.selectbox(
+    "Sector",
+    sorted(df["sector"].unique().tolist())
+)
 
-bathroom = float(st.selectbox('Number of Bathrooms',sorted(df['bathroom'].unique().tolist())))
+bedrooms = float(st.sidebar.selectbox(
+    "Number of Bedrooms",
+    sorted(df["bedRoom"].unique().tolist())
+))
 
-balcony = st.selectbox('Balconies',sorted(df['balcony'].unique().tolist()))
+bathroom = float(st.sidebar.selectbox(
+    "Number of Bathrooms",
+    sorted(df["bathroom"].unique().tolist())
+))
 
-property_age = st.selectbox('Property Age',sorted(df['agePossession'].unique().tolist()))
+balcony = st.sidebar.selectbox(
+    "Balconies",
+    sorted(df["balcony"].unique().tolist())
+)
 
-built_up_area = float(st.number_input('Built Up Area'))
+property_age = st.sidebar.selectbox(
+    "Property Age",
+    sorted(df["agePossession"].unique().tolist())
+)
 
-servant_room = float(st.selectbox('Servant Room',[0.0, 1.0]))
-store_room = float(st.selectbox('Store Room',[0.0, 1.0]))
+built_up_area = float(st.sidebar.number_input(
+    "Built Up Area (sqft)",
+    min_value=100.0
+))
 
-furnishing_type = st.selectbox('Furnishing Type',sorted(df['furnishing_type'].unique().tolist()))
-luxury_category = st.selectbox('Luxury Category',sorted(df['luxury_category'].unique().tolist()))
-floor_category = st.selectbox('Floor Category',sorted(df['floor_category'].unique().tolist()))
+servant_room = float(st.sidebar.selectbox(
+    "Servant Room",
+    [0.0, 1.0]
+))
 
-if st.button('Predict'):
+store_room = float(st.sidebar.selectbox(
+    "Store Room",
+    [0.0, 1.0]
+))
 
-    # form a dataframe
-    data = [[property_type, sector, bedrooms, bathroom, balcony, property_age, built_up_area, servant_room, store_room, furnishing_type, luxury_category, floor_category]]
-    columns = ['property_type', 'sector', 'bedRoom', 'bathroom', 'balcony',
-               'agePossession', 'built_up_area', 'servant room', 'store room',
-               'furnishing_type', 'luxury_category', 'floor_category']
+furnishing_type = st.sidebar.selectbox(
+    "Furnishing Type",
+    sorted(df["furnishing_type"].unique().tolist())
+)
 
-    # Convert to DataFrame
+luxury_category = st.sidebar.selectbox(
+    "Luxury Category",
+    sorted(df["luxury_category"].unique().tolist())
+)
+
+floor_category = st.sidebar.selectbox(
+    "Floor Category",
+    sorted(df["floor_category"].unique().tolist())
+)
+
+# Prediction button
+if st.sidebar.button("Predict Price"):
+
+    data = [[
+        property_type,
+        sector,
+        bedrooms,
+        bathroom,
+        balcony,
+        property_age,
+        built_up_area,
+        servant_room,
+        store_room,
+        furnishing_type,
+        luxury_category,
+        floor_category
+    ]]
+
+    columns = [
+        "property_type",
+        "sector",
+        "bedRoom",
+        "bathroom",
+        "balcony",
+        "agePossession",
+        "built_up_area",
+        "servant room",
+        "store room",
+        "furnishing_type",
+        "luxury_category",
+        "floor_category"
+    ]
+
     one_df = pd.DataFrame(data, columns=columns)
 
-    #st.dataframe(one_df)
-
-    # predict
+    # Prediction
     base_price = np.expm1(pipeline.predict(one_df))[0]
+
     low = base_price - 0.22
     high = base_price + 0.22
 
-    # display
-    st.text("The price of the flat is between {} Cr and {} Cr".format(round(low,2),round(high,2)))
+    st.subheader("💰 Estimated Property Price")
+
+    st.metric(
+        label="Predicted Price",
+        value=f"{round(base_price,2)} Cr"
+    )
+
+    st.write(
+        f"📊 Expected Price Range: **{round(low,2)} Cr – {round(high,2)} Cr**"
+    )
