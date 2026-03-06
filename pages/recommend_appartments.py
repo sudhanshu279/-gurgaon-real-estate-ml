@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
+from pathlib import Path
 
 # ---------------------------------------------------
 # Page Configuration
@@ -9,20 +10,27 @@ import numpy as np
 st.set_page_config(page_title="Apartment Recommender", layout="wide")
 
 # ---------------------------------------------------
+# Project Path
+# ---------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "datasets"
+
+# ---------------------------------------------------
 # Load Data
 # ---------------------------------------------------
 @st.cache_data
 def load_data():
-    with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/location_df.pkl', 'rb') as f:
+
+    with open(DATA_DIR / "location_df.pkl", "rb") as f:
         location_df = pickle.load(f)
 
-    with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/cosine_sim1.pkl', 'rb') as f:
+    with open(DATA_DIR / "cosine_sim1.pkl", "rb") as f:
         cosine_sim1 = pickle.load(f)
 
-    with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/cosine_sim2.pkl', 'rb') as f:
+    with open(DATA_DIR / "cosine_sim2.pkl", "rb") as f:
         cosine_sim2 = pickle.load(f)
 
-    with open('/Users/apple/Documents/abc/Capstone_project_part2/datasets/cosine_sim3.pkl', 'rb') as f:
+    with open(DATA_DIR / "cosine_sim3.pkl", "rb") as f:
         cosine_sim3 = pickle.load(f)
 
     return location_df, cosine_sim1, cosine_sim2, cosine_sim3
@@ -44,7 +52,6 @@ def recommend_properties_with_scores(property_name, top_n=5):
         return pd.DataFrame()
 
     sim_scores = list(enumerate(cosine_sim_matrix[idx]))
-
     sorted_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
 
     top_indices = [i[0] for i in sorted_scores[1:top_n+1]]
@@ -61,13 +68,11 @@ def recommend_properties_with_scores(property_name, top_n=5):
 
 
 # ---------------------------------------------------
-# App Title
+# App UI
 # ---------------------------------------------------
 st.title("🏢 Gurgaon Apartment Recommendation System")
 
-# ---------------------------------------------------
-# Location Radius Search
-# ---------------------------------------------------
+# Location search
 st.header("📍 Search Apartments Near a Location")
 
 col1, col2 = st.columns(2)
@@ -80,7 +85,7 @@ with col1:
 
 with col2:
     radius = st.number_input(
-        "Radius (in km)",
+        "Radius (km)",
         min_value=1,
         max_value=20,
         value=5
@@ -101,13 +106,11 @@ if st.button("Search Nearby Apartments"):
             st.write(f"• {key} — {round(value/1000,2)} km")
 
 
-# ---------------------------------------------------
-# Apartment Recommendation
-# ---------------------------------------------------
+# Recommendation
 st.header("🤖 Recommend Similar Apartments")
 
 selected_apartment = st.selectbox(
-    "Select an Apartment",
+    "Select Apartment",
     sorted(location_df.index.to_list())
 )
 
