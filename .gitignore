@@ -1,8 +1,5 @@
-# Ignore only pickle models
-*.pkl
-
-# Keep joblib models
-!*.joblib
+# Ignore only pipeline.pkl
+pipeline.pkl
 
 # Virtual environment
 capstone_env/
@@ -16,4 +13,5 @@ __pycache__/
 
 # Mac files
 .DS_Store
-pipeline.pkl
+
+1)pipeline.pkl 
