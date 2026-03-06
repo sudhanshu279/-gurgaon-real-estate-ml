@@ -10,7 +10,7 @@ st.set_page_config(page_title="Plotting Demo")
 
 st.title('Analytics')
 
-new_df = pd.read_csv('/Users/apple/Documents/abc/Capstone_project_part2/datasets/8)data_viz1.csv')
+new_df = pd.read_csv('datasets/8)data_viz1.csv')
 st.dataframe(new_df.head())
 
 feature_text = pickle.load(open('datasets/feature_text.pkl','rb'))
